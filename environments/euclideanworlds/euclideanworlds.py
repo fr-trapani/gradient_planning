@@ -68,19 +68,19 @@ class EuclideanGridWorld(GridWorld):
         return - np.sqrt((l1[0] - l2[0])**2 + (l1[1] - l2[1])**2)    
 
 
-class OneDoorEuclidePoseWorld(OneDoor, EuclideanPoseWorld):
+class TwoRoomsEuclidePoseWorld(TwoRooms, EuclideanPoseWorld):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class OneDoorEuclideGridWorld(OneDoor, EuclideanGridWorld):
+class TwoRoomsEuclideGridWorld(TwoRooms, EuclideanGridWorld):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class FourRoomEuclidePoseWorld(FourRoomAlternate, EuclideanPoseWorld):
+class FourRoomEuclidePoseWorld(FourRoom, EuclideanPoseWorld):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class FourRoomEuclideGridWorld(FourRoomAlternate, EuclideanGridWorld):
+class FourRoomEuclideGridWorld(FourRoom, EuclideanGridWorld):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

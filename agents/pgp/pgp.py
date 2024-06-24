@@ -260,6 +260,11 @@ class PGP(BaseTabular, metaclass=ABCMeta):
         # learning loop
         for t in tqdm(range(n_steps)):
 
+            # store history
+            v_t[t] = self.EV
+            sr0_t[t] = self.p0 @ self.SR
+            theta_t[t] = self.theta
+
             # update alpha if computed dynamically
             if alpha_func is not None:
                 alpha = alpha_func(self, **kwargs)
@@ -273,11 +278,6 @@ class PGP(BaseTabular, metaclass=ABCMeta):
             # clamp policy if needed
             if min_theta is not None:
                 self.theta[self.A] = np.maximum(self.theta[self.A], min_theta)
-
-            # store history
-            v_t[t] = self.EV
-            sr0_t[t] = self.p0 @ self.SR
-            theta_t[t] = self.theta
 
         # append history
         if keep_history:

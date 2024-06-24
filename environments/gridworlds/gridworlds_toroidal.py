@@ -28,7 +28,7 @@ class TorusWorld(GridWorld):
         return lists_l2, probs_l2
 
 
-class OneDoorTorus(OneDoor, TorusWorld):
+class TwoRoomsTorus(TwoRooms, TorusWorld):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

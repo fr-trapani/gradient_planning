@@ -1,9 +1,10 @@
 import numpy as np
+
 from environments.mutantworlds.mutantworld import MutantWorld
+from environments.gridworlds.gridworlds_classic import *
 
 
 class MutantCross(MutantWorld):
-
 
     def __init__(self):
 

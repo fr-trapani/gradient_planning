@@ -1,4 +1,5 @@
 import numpy as np
+from environments.gridworlds.gridactions import BasicActionSet
 from environments.gridworlds.gridworld import *
 
 
@@ -111,7 +112,6 @@ class FourRoom(GridWorld):
         super().__init__(nx, ny, init_locs, p_init_locs=p_init_locs, term_locs=term_locs, walls=walls, **kwargs)
         self.add_grid_rewards(reward, term_locs)
 
-
         # state_sets
         self.state_sets = []
         self.state_set_colors = []
@@ -151,7 +151,8 @@ class FourRoom(GridWorld):
         self.state_set_colors.append("brown")
         self.state_set_labels.append("doors")   
 
-class FourRoomAlternate(FourRoom):
+
+class FourRoomAsymmetric(FourRoom):
     """
     grid world with four rooms connected by doors
     
@@ -176,31 +177,42 @@ class FourRoom2Goals(FourRoom):
         super().__init__(n_square=n_square, init_locs=init_locs, p_init_locs=None, term_locs=term_locs, reward=reward, **kwargs)
 
 
-class OneDoor(GridWorld):
+class TwoRooms(GridWorld):
     """
     grid world with two rooms connected by a door
     
     """
     def __init__(self, 
                  n_square = 11, 
-                 init_locs=np.array([[2,2]]), 
+                 init_locs=None, 
                  p_init_locs=None, 
-                 term_locs=np.array([[20, 2]]), 
-                 rew_locs=np.array([[20, 2]]), 
-                 reward_vals = np.array([100]), 
+                 term_locs=None, 
+                 rew_locs=None, 
+                 rew_vals =None, 
                  **kwargs):
 
-        self.n_square = n_square     
-        nx =  2 * n_square+1
-        ny = n_square
+        self.n_square = n_square
+        nx, ny =  2 * n_square+1, n_square
+
+        if init_locs is None:
+            init_locs = np.array([[min(2, n_square), min(2, n_square)]])
         
+        if term_locs is None:
+            term_locs = np.array([[max(n_square+1, nx-3), min(2, n_square)]])
+
+        if rew_locs is None:
+            rew_locs = term_locs
+
+        if rew_vals is None:
+            rew_vals =  np.array([100])
+
         walls_map = np.full([nx, ny], False, dtype=bool)
         walls_map[n_square, 0:n_square//2] = True
         walls_map[n_square, n_square//2 + 1:n_square] = True
         walls = np.argwhere(walls_map)
 
         super().__init__(nx, ny, init_locs, p_init_locs=p_init_locs, term_locs=term_locs, walls=walls, **kwargs)
-        self.add_grid_rewards(reward_vals, rew_locs)
+        self.add_grid_rewards(rew_vals, rew_locs)
 
 
 class ForkedRoom(GridWorld):
@@ -218,7 +230,6 @@ class ForkedRoom(GridWorld):
         rew_term_locs = np.array([[n_square//2, 3*n_square - 2]])
         reward = np.array([100])
         
-        # walls defined by lower left corner and upper right corner [[x1,y1], [x2,y2]]
         walls_map = np.full([nx, ny], False, dtype=bool)
         walls_map[0 : n_square-1, n_square] = True
         walls_map[n_square+2 : 3 * n_square + 1, n_square] = True
@@ -232,10 +243,48 @@ class ForkedRoom(GridWorld):
         self.add_grid_rewards(reward, rew_term_locs)
 
 
+class TreeMaze(GridWorld):
+    """
+    A gridworld where the rooms are connected according to a binary tree structure.
+    Each of the 4 leaf rooms contain the goal location (to be selected with the goal_room argument)
+    attribures:
+            -   goal_room [int] index of the room (in interval [0, 3]) to contain the goal location 
+    """
+    def __init__(self, goal_room=None, **kwargs):
+
+        nx = 15
+        ny = 7
+        self.goal_locs = np.array([[0, 0],           [0, 1],        #[1, 0],         [1, 1],
+                                   [0, ny-2],        [0, ny-1],     #[1, ny-2],      [1, ny-1],
+                                   [nx-1, 0],        [nx-1, 1],     #[nx-2, 0],        [nx-2, 1],
+                                   [nx-1, ny-2],   [nx-1, ny-1],    #[nx-2, ny-2],     [nx-2, ny-1],
+                                ])
+
+        init_locs = np.array([[nx//2, ny-2]])
+        goal_room = np.random.randint(4) if (goal_room is None) else goal_room
+        term_locs = np.array([self.goal_locs[goal_room]])
+        reward = np.array([100])
+
+        walls_map = np.full([nx, ny], False, dtype=bool)
+        # central walls
+        walls_map[3, :] = True
+        walls_map[4:nx-4, 0] = True
+        walls_map[nx-4, :] = True
+        walls_map[4:nx-4, ny-1] = True
+        # central doors
+        walls_map[3, ny//2] = False
+        walls_map[nx-4, ny//2] = False
+
+        # secundary walls
+        walls_map[:1, ny//2] = True
+        walls_map[-1:, ny//2] = True
+        walls = np.argwhere(walls_map)
+
+        super().__init__(nx=nx, ny=ny, init_locs=init_locs, term_locs=term_locs, walls=walls, **kwargs)
+        self.add_grid_rewards(reward, term_locs)
+
+
 class Agarwal(GridWorld):
-    """
-    Simple squared room with no walls
-    """
     def __init__(self, **kwargs):
         nx = 3
         ny = 2
@@ -250,9 +299,6 @@ class Agarwal(GridWorld):
 
 
 class Russo(GridWorld):
-    """
-    Simple squared room with no walls
-    """
     def __init__(self, **kwargs):
 
         actions = IdleActionSet()
